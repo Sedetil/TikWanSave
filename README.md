@@ -22,8 +22,9 @@ TikWanSave adalah aplikasi **downloader MP4 dan MP3** dari TikTok yang dirancang
 
 1. **Salin tautan** video atau audio TikTok yang ingin Anda unduh.
 2. **Buka aplikasi TikWanSave** dan tempel tautan di kolom yang disediakan.
-3. **Pilih format** yang diinginkan (MP4 atau MP3).
-4. **Klik tombol unduh**, dan nikmati konten Anda!
+3. **Ganti nama file** sesuai yang diinginkan.
+4. **Pilih format** yang diinginkan (MP4 atau MP3).
+5. **Klik tombol unduh**, dan nikmati konten Anda!
 
 ## 📝 Dukungan dan Umpan Balik
 
