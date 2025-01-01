@@ -28,7 +28,7 @@ TikWanSave adalah aplikasi **downloader MP4 dan MP3** dari TikTok yang dirancang
 
 ## 📝 Dukungan dan Umpan Balik
 
-Kami sangat menghargai umpan balik dari Anda! Jika Anda menikmati aplikasi ini, jangan lupa untuk memberikan penilaian bintang ⭐ dan ulasan di toko aplikasi. Setiap ulasan Anda sangat berarti bagi kami dan membantu pengguna lain menemukan TikWanSave.
+Kami sangat menghargai umpan balik dari Anda! Jika Anda menikmati aplikasi ini, jangan lupa untuk memberikan penilaian bintang ⭐ dan ulasan di github. Setiap ulasan Anda sangat berarti bagi kami dan membantu pengguna lain menemukan TikWanSave.
 
 ## 📞 Bantuan
 
