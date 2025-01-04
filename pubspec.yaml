@@ -21,6 +21,7 @@ dependencies:
   dio: ^5.2.0
   flutter_local_notifications: ^18.0.1
   change_app_package_name: ^1.4.0
+  shared_preferences: ^2.3.5
 
 dev_dependencies:
   flutter_test:
