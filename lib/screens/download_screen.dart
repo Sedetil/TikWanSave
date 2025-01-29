@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DownloadScreen extends StatefulWidget {
   final Map<String, String> links;
@@ -35,7 +36,6 @@ class _DownloadScreenState extends State<DownloadScreen> {
   }
 
   Future<void> _checkAndRequestPermissions() async {
-    // Cek dan minta izin penyimpanan dan notifikasi
     if (Platform.isAndroid) {
       var storageStatus = await Permission.manageExternalStorage.request();
       var notificationStatus = await Permission.notification.request();
@@ -153,6 +153,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
       );
 
       Navigator.pop(context);
+      await _saveDownloadHistory(savePath); // Simpan riwayat unduhan
       await _showDownloadCompletedNotification(filename);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("$filename berhasil diunduh di $savePath")),
@@ -162,6 +163,16 @@ class _DownloadScreenState extends State<DownloadScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Gagal mengunduh file: $e")),
       );
+    }
+  }
+
+  // Fungsi untuk menyimpan riwayat unduhan ke SharedPreferences
+  Future<void> _saveDownloadHistory(String filePath) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> history = prefs.getStringList('download_history') ?? [];
+    if (!history.contains(filePath)) {
+      history.add(filePath);
+      await prefs.setStringList('download_history', history);
     }
   }
 
@@ -242,11 +253,17 @@ class _DownloadScreenState extends State<DownloadScreen> {
           children: [
             ElevatedButton(
               onPressed: () => _promptAndDownload(context, widget.links['video']!, "TikWanSave.mp4"),
-              child: const Text("Download Video MP4"),
+              child: const Text(
+                "Download Video MP4",
+                style: TextStyle(color: Colors.blue), // Ubah warna teks menjadi biru
+              ),
             ),
             ElevatedButton(
               onPressed: () => _promptAndDownload(context, widget.links['audio']!, "TikWanSave.mp3"),
-              child: const Text("Download Audio MP3"),
+              child: const Text(
+                "Download Audio MP3",
+                style: TextStyle(color: Colors.blue), // Ubah warna teks menjadi biru
+              ),
             ),
           ],
         ),

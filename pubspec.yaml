@@ -5,7 +5,7 @@ description: "A new Flutter project."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
-version: 1.0.0+1
+version: 1.2.0+2
 
 environment:
   sdk: ^3.5.4
@@ -22,6 +22,10 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   change_app_package_name: ^1.4.0
   shared_preferences: ^2.3.5
+  url_launcher: ^6.3.1
+  video_player: ^2.7.0
+  chewie: ^1.7.1
+  audioplayers: ^5.2.1
 
 dev_dependencies:
   flutter_test:

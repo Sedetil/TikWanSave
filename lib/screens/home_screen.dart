@@ -54,17 +54,23 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             TextField(
               controller: _urlController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Masukkan URL TikTok",
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                focusedBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue, width: 2.0), // Border saat fokus
+                ),
               ),
             ),
             const SizedBox(height: 16),
             isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator(color: Colors.blue)) // Ubah warna progress menjadi biru
                 : ElevatedButton(
               onPressed: _fetchLinks,
-              child: const Text("Proses"),
+              child: const Text(
+                "Proses",
+                style: TextStyle(color: Colors.blue), // Ubah warna tulisan tombol menjadi putih
+              ),
             ),
           ],
         ),
