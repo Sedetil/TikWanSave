@@ -16,6 +16,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   ChewieController? _chewieController;
   AudioPlayer _audioPlayer = AudioPlayer();
   bool isAudioPlaying = false;
+  bool isVideoPlaying = false;
 
   @override
   void initState() {
@@ -37,9 +38,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         downloadedFiles.remove(filePath);
       });
       _updateHistory();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("File tidak ditemukan!")),
-      );
+      _showSnackbar("File tidak ditemukan!", Colors.redAccent);
       return;
     }
 
@@ -50,9 +49,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     } else if (['mp3', 'wav', 'aac', 'ogg'].contains(extension)) {
       _playAudio(file);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Format file tidak didukung!")),
-      );
+      _showSnackbar("Format file tidak didukung!", Colors.orangeAccent);
     }
   }
 
@@ -64,10 +61,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
     _videoPlayerController = VideoPlayerController.file(file)
       ..initialize().then((_) {
         setState(() {
+          isVideoPlaying = true;
           _chewieController = ChewieController(
             videoPlayerController: _videoPlayerController!,
             autoPlay: true,
             looping: false,
+            allowFullScreen: true,
           );
         });
       });
@@ -76,7 +75,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void _playAudio(File file) async {
     _videoPlayerController?.dispose();
     _chewieController?.dispose();
-
     _stopAudio();
     await _audioPlayer.play(DeviceFileSource(file.path));
     setState(() {
@@ -107,8 +105,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
     await _updateHistory();
 
+    _showSnackbar("File berhasil dihapus!", Colors.greenAccent);
+  }
+
+  void _showSnackbar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("File berhasil dihapus!")),
+      SnackBar(
+        content: Text(message, style: TextStyle(color: Colors.white)),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -122,65 +128,91 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Riwayat Unduhan")),
-      body: downloadedFiles.isEmpty
-          ? Center(
-        child: Text(
-          'Belum ada media yang diunduh',
-          style: TextStyle(fontSize: 18),
+    return WillPopScope(
+      onWillPop: () async {
+        if (isVideoPlaying) {
+          setState(() {
+            isVideoPlaying = false;
+            _videoPlayerController?.dispose();
+            _chewieController?.dispose();
+          });
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Riwayat Unduhan"),
         ),
-      )
-          : Column(
-        children: [
-          if (_chewieController != null &&
-              _chewieController!.videoPlayerController.value.isInitialized)
-            AspectRatio(
-              aspectRatio: _videoPlayerController!.value.aspectRatio,
-              child: Chewie(controller: _chewieController!),
+        body: Column(
+          children: [
+            AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              height: isVideoPlaying ? 250 : 0,
+              child: isVideoPlaying && _chewieController != null &&
+                  _chewieController!.videoPlayerController.value.isInitialized
+                  ? AspectRatio(
+                aspectRatio: _videoPlayerController!.value.aspectRatio,
+                child: Chewie(controller: _chewieController!),
+              )
+                  : SizedBox.shrink(),
             ),
-          if (isAudioPlaying)
-            Container(
-              padding: EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Sedang Memutar Audio"),
-                  SizedBox(width: 10),
-                  IconButton(
-                    icon: Icon(Icons.stop),
-                    onPressed: _stopAudio,
-                  ),
-                ],
+            if (isAudioPlaying)
+              Container(
+                padding: EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Sedang Memutar Audio", style: TextStyle(fontWeight: FontWeight.bold)),
+                    SizedBox(width: 10),
+                    IconButton(
+                      icon: Icon(Icons.stop, color: Colors.red),
+                      onPressed: _stopAudio,
+                    ),
+                  ],
+                ),
+              ),
+            Expanded(
+              child: downloadedFiles.isEmpty
+                  ? Center(
+                child: Text(
+                  'Belum ada media yang diunduh',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                ),
+              )
+                  : ListView.builder(
+                itemCount: downloadedFiles.length,
+                itemBuilder: (context, index) {
+                  String filePath = downloadedFiles[index];
+                  String fileName = filePath.split('/').last;
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    child: ListTile(
+                      leading: Icon(Icons.file_present, color: Colors.deepPurple),
+                      title: Text(fileName, style: TextStyle(fontWeight: FontWeight.w500)),
+                      subtitle: Text(filePath, style: TextStyle(color: Colors.grey.shade600)),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.play_arrow, color: Colors.green),
+                            onPressed: () => _playMedia(filePath),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.redAccent),
+                            onPressed: () => _deleteFile(filePath),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: downloadedFiles.length,
-              itemBuilder: (context, index) {
-                String filePath = downloadedFiles[index];
-                String fileName = filePath.split('/').last;
-                return ListTile(
-                  title: Text(fileName),
-                  subtitle: Text(filePath),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.play_arrow),
-                        onPressed: () => _playMedia(filePath),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () => _deleteFile(filePath),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

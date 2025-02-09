@@ -27,7 +27,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
 
   Future<void> _initializeNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
+    AndroidInitializationSettings('@drawable/icon_notification');
 
     const InitializationSettings initializationSettings =
     InitializationSettings(android: initializationSettingsAndroid);
@@ -37,11 +37,20 @@ class _DownloadScreenState extends State<DownloadScreen> {
 
   Future<void> _checkAndRequestPermissions() async {
     if (Platform.isAndroid) {
-      var storageStatus = await Permission.manageExternalStorage.request();
-      var notificationStatus = await Permission.notification.request();
+      var storageStatus = await Permission.storage.status;
+      var notificationStatus = await Permission.notification.status;
 
-      if (storageStatus.isDenied || notificationStatus.isDenied) {
-        _showPermissionDeniedDialog(context);
+      if (!storageStatus.isGranted) {
+        await Permission.storage.request();
+      }
+
+      if (await Permission.manageExternalStorage.isGranted ||
+          await Permission.manageExternalStorage.request().isGranted) {
+        print("Izin manageExternalStorage diberikan");
+      }
+
+      if (!notificationStatus.isGranted) {
+        await Permission.notification.request();
       }
     }
   }
@@ -245,24 +254,33 @@ class _DownloadScreenState extends State<DownloadScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Pilih Format Unduhan")),
+      appBar: AppBar(
+        title: const Text("Pilih Format Unduhan"),
+        centerTitle: true,
+        elevation: 4,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ElevatedButton(
-              onPressed: () => _promptAndDownload(context, widget.links['video']!, "TikWanSave.mp4"),
-              child: const Text(
-                "Download Video MP4",
-                style: TextStyle(color: Colors.blue), // Ubah warna teks menjadi biru
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 4,
+              child: ListTile(
+                leading: Icon(Icons.video_file, color: Colors.blueAccent),
+                title: const Text("Download Video MP4"),
+                onTap: () => _promptAndDownload(context, widget.links['video']!, "TikWanSave.mp4"),
               ),
             ),
-            ElevatedButton(
-              onPressed: () => _promptAndDownload(context, widget.links['audio']!, "TikWanSave.mp3"),
-              child: const Text(
-                "Download Audio MP3",
-                style: TextStyle(color: Colors.blue), // Ubah warna teks menjadi biru
+            SizedBox(height: 10),
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 4,
+              child: ListTile(
+                leading: Icon(Icons.music_note, color: Colors.blueAccent),
+                title: const Text("Download Audio MP3"),
+                onTap: () => _promptAndDownload(context, widget.links['audio']!, "TikWanSave.mp3"),
               ),
             ),
           ],
